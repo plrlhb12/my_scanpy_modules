@@ -107,7 +107,7 @@ def main():
     # optional argument
     parser.add_argument("-i", "--input_file", type=str, help="path of the input of 'after_ranking_gene.h5ad'", default="after_ranking_gene.h5ad")
     parser.add_argument("-m", "--marker_ref_path", type=str, help="path of panglao reference markers", \
-        default="/Users/pengl7/Desktop/scanpy_modules/reference_markers/marker_panglao_dic.p")
+        default="/Users/pengl7/Desktop/my_scanpy_modules/reference_markers/marker_panglao_dic.p")
     parser.add_argument("-o", "--out", type=str, help="path of the anndata object to be saved", default="after_annotated.h5ad")
     parser.add_argument("-d", "--dpi", type=int, help="resolution of the output figure", default=80)
     parser.add_argument("-s", "--figsize", type=float, nargs=2, help="size of output figure, use 2 numbers, e.g., 2 2")
