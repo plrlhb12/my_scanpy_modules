@@ -22,21 +22,21 @@ def get_ref_list(marker_ref_path):
 
     return marker_ref
 
-def cell_types(adata, marker_ref, ranking_key=None, method=None, normalize=None):
+def cell_types(adata, marker_ref, rank_key=None, method=None, normalize=None):
     """
     Generate a list containing the cell type corresponding to the clusters at a specific resolution
-    ranking_key: the key of the rank_genes_groups at a resolution
+    rank_key: the key of the rank_genes_groups at a resolution
     method: one of the 4 methods provided by sc.t,.marker_gene_overlap
     normalize: use when the method is "overlap_count"; options: "data", "reference", "None"
     Choose the type with the highest score to generate the list of cell types corresponding to each cluster
     """
-    annotation = sc.tl.marker_gene_overlap(adata, marker_ref, key=ranking_key, method=method, normalize=normalize)
+    annotation = sc.tl.marker_gene_overlap(adata, marker_ref, key=rank_key, method=method, normalize=normalize)
 
     # sns.set(rc={'figure.figsize':(20, 20)})
     # sns.heatmap(annotation, annot=True)
     fig, ax = plt.subplots(figsize=(20,20))
     ax = sns.heatmap(annotation, annot=True)
-    plt.savefig(ranking_key+method+".pdf")
+    plt.savefig(rank_key+method+".pdf")
 
     cell_types = []
     for col in annotation.columns.to_list(): # columns are cluster names
@@ -51,14 +51,14 @@ def cell_types(adata, marker_ref, ranking_key=None, method=None, normalize=None)
 
     return cell_types
 
-def compare_types(adata, marker_ref, ranking_key=None):
+def compare_types(adata, marker_ref, rank_key=None):
     """
     Try 3 methods ("overlap_count", jaccard", "overlap_coef") and merge them to a datafram
     The option of normalize in the method of "overlap_count" can change the type greatly
     """
-    cell_types_1 = cell_types(adata, marker_ref, ranking_key=ranking_key, method="overlap_count", normalize="reference")
-    cell_types_2 = cell_types(adata, marker_ref, ranking_key=ranking_key, method="jaccard")
-    cell_types_3 = cell_types(adata, marker_ref, ranking_key=ranking_key, method="overlap_coef")
+    cell_types_1 = cell_types(adata, marker_ref, rank_key=rank_key, method="overlap_count", normalize="reference")
+    cell_types_2 = cell_types(adata, marker_ref, rank_key=rank_key, method="jaccard")
+    cell_types_3 = cell_types(adata, marker_ref, rank_key=rank_key, method="overlap_coef")
     cell_types_all = pd.DataFrame({"overlap_count": cell_types_1, "jaccard": cell_types_2, "overlap_coef": cell_types_3})
 
     return cell_types_all
@@ -115,8 +115,8 @@ def main():
     parser.add_argument("-p", "--project", type=str, help="give the project name", default="")
     parser.add_argument("-S", "--show", type=lambda x: (str(x).lower() in ['true', "1", "yes"]), help="default is show=True; provide no, false, or 0 to block print to screen")
     parser.add_argument("-k", "--key", type=str, help="Choose the key of leiden clustering", default="leiden_0.4")
-    parser.add_argument("-r", "--ranking_key", type=str, help="Choose the key of ranking_genes_groups to be compared to marker_ref, \
-        e.g., ranking_genes_groups", default="ranking_genes_groups_r0.6")
+    parser.add_argument("-r", "--rank_key", type=str, help="Choose the key of rank_genes_groups to be compared to marker_ref, \
+        e.g., rank_genes_groups", default="rank_genes_groups_r0.6")
     parser.add_argument("-n", "--new_cluster_names", type=str, nargs="+", help="provide the cell type name corresponding to each cluster")
 
     # parser.set_defaults(func=annotate) #??
@@ -130,7 +130,7 @@ def main():
     figure_type = args.figure_type
     show = args.show
     project = args.project if (args.project == "") else ("_" + args.project)
-    ranking_key = args.ranking_key
+    rank_key = args.rank_key
     key = args.key
     new_cluster_names = args.new_cluster_names
 
@@ -147,7 +147,7 @@ def main():
     # get the reference gene list from a path
     marker_ref = get_ref_list(marker_ref_path)
     # get the cell types after comparing 3 methods of overlapping using the function of cell_types()
-    cell_types_all = compare_types(adata, marker_ref, ranking_key=ranking_key)
+    cell_types_all = compare_types(adata, marker_ref, rank_key=rank_key)
     # generate the final cell type dic
     final_type_dic = final_types(cell_types_all)
 
