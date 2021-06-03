@@ -27,6 +27,7 @@ def cluster(args):
     key_added = args.key_added
     a = args.a_value
     b = args.b_value
+    bbknn = args.bbknn
 
     # set scanpy parameters
     sc.settings.verbosity = 3  # verbosity: errors (0), warnings (1), info (2), hints (3)
@@ -39,8 +40,12 @@ def cluster(args):
     adata = sc.read_h5ad(input)
 
     ### Computing, embedding, and clustering the neighborhood graph according to batch 
-    # defaults are: n_neighbors= 15, n_pcs=None
-    sc.external.pp.bbknn(adata, batch_key="batch")
+    # defaults are: n_neighbors= 15, n_pcs=None (default use 50)
+    if bbknn == True:
+        sc.external.pp.bbknn(adata, batch_key="batch")
+    else:
+        sc.pp.neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs)
+
     sc.tl.umap(adata, a=a, b=b)
     # plot umap using raw data: normalized and logarithimized but not regressed out
     # sc.pl.umap(adata, color=color, save="_on_raw_"+project+"."+figure_type)
@@ -62,7 +67,8 @@ def main():
     parser.add_argument("-p", "--project", type=str, help="the project name", default="")
     parser.add_argument("-o", "--out", type=str, help="the file name to save the anndata object", default="after_leiden.h5ad")
     parser.add_argument("-s", "--figsize", type=float, nargs=2, help="the size of output figure, use 2 numbers, e.g., 2 2")
-    parser.add_argument("-S", "--show", type=lambda x: (str(x).lower() in ['true', "1", "yes"]), help="block output figures on the screen by providing no, false, or 0")
+    parser.add_argument("-S", "--show", type=lambda x: (str(x).lower() in ['true', "1", "yes"]), 
+        help="block output figures on the screen by providing no, false, 0, or any other characters than true, 1, yes")
     
     # umap parmeters
     parser.add_argument("-n", "--n_neighbors", type=int, help="the size of local neiborhood for manifold approximation", default=15)
@@ -71,7 +77,8 @@ def main():
     parser.add_argument("-M", "--metric", type=str, help="the metric for neighborhood graph, [‘cityblock’, ‘cosine’, ‘euclidean’, ‘l1’, ‘l2’, ‘manhattan’], Literal[‘braycurtis’, ‘canberra’, ‘chebyshev’, ‘correlation’, ‘dice’, ‘hamming’, ‘jaccard’, ‘kulsinski’, ‘mahalanobis’, ‘minkowski’, ‘rogerstanimoto’, ‘russellrao’, ‘seuclidean’, ‘sokalmichener’, ‘sokalsneath’, ‘sqeuclidean’, ‘yule’],", default="euclidean")
     parser.add_argument("-a", "--a_value", type=float, help="the a parameter for umap", default=None)
     parser.add_argument("-b", "--b_value", type=float, help="the b parameter for umap", default=None)
-
+    parser.add_argument("-B", "--bbknn", type=lambda x: (str(x).lower() in ["yes", "true", "1"]),
+        help="using bbknn to correct batch effect by providing Yes, true, or 1", default=False)
     # leiden parameters
     parser.add_argument("-r", "--resolution", type=float, help="the resolution for leiden", default=1.0)
 
