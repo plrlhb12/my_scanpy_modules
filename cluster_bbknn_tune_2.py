@@ -41,7 +41,7 @@ def cluster(args):
 
     ### Computing, embedding, and clustering the neighborhood graph according to batch 
     # defaults are: n_neighbors= 15, n_pcs=None (default use 50)
-    if bbknn == True:
+    if bbknn is True:
         sc.external.pp.bbknn(adata, batch_key="batch")
     else:
         sc.pp.neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs)
